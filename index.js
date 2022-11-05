@@ -1,5 +1,3 @@
-'use strict'
-const e = require('express');
 const express = require('express');
 
 const host = 'localhost';
@@ -12,26 +10,29 @@ const todos = [
 ];
 
 const app = express();
+app.use('/hello', (req, res, next) => {
+    res.send('Hello, world!');
+});
+
+// staticディレクトリ以下のファイルを静的データとして返す
+app.use(express.static('static'));
 
 // リクエスト本文のJSON文字列を自動的にオブジェクトへ変換
 app.use(express.json());
 
-// 静的ファイルはstatic以下のフォルダの内容を返す。
-app.use(express.static('static'));
-
 app.get(apiEndPoint + 'todos', (req, res) => {
     res.json(todos);
-})
+});
 
-app.get(apiEndPoint + 'todos/:id(\\d+)', (req, res, next) => {
-    const todo = todos.find(todo => todo.id === req.params.id);
+app.get(apiEndPoint + 'todos/:id', (req, res, next) => {
+    const todo = todos.find(todo => todo.id === parseInt(req.params.id));
     if (todo) {
         return res.json(todo);
     }
     const err = new Error(req.params.id + ' is not found.');
     err.statusCode = 404;
     next(err);
-})
+});
 
 app.post(apiEndPoint + 'todos', (req, res, next) => {
     const obj = req.body; // リクエスト本文のJSON文字列から変換されたオブジェクト
@@ -53,7 +54,7 @@ app.post(apiEndPoint + 'todos', (req, res, next) => {
     res.status(201).json(newTodo);
 });
 
-app.put(apiEndPoint + 'todos/:id(\\d+)', (req, res, next) => {
+app.put(apiEndPoint + 'todos/:id', (req, res, next) => {
     const todo = todos.find(todo => todo.id === req.params.id);
     if (todo) {
         const obj = req.body; // リクエスト本文のJSON文字列から変換されたオブジェクト
@@ -68,7 +69,7 @@ app.put(apiEndPoint + 'todos/:id(\\d+)', (req, res, next) => {
     next(err);
 });
 
-app.delete(apiEndPoint + 'todos/:id(\\d+)', (req, res, next) => {
+app.delete(apiEndPoint + 'todos/:id', (req, res, next) => {
     const todoIndex = todos.findIndex(todo => todo.id === req.params.id);
     if (todoIndex >= 0) {
         todos.splice(todoIndex, 1);
@@ -80,7 +81,7 @@ app.delete(apiEndPoint + 'todos/:id(\\d+)', (req, res, next) => {
     next(err);
 });
 
-// エラーハンドリングミドルウェア 教科書 p.182
+// エラーハンドリングミドルウェア 教科書 p.184
 app.use((err, req, res, next) => {
     console.error(err);
     res.status(err.statusCode || 500).json({ error: err.message });
