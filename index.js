@@ -55,12 +55,13 @@ app.post(apiEndPoint + 'todos', (req, res, next) => {
 });
 
 app.put(apiEndPoint + 'todos/:id', (req, res, next) => {
-    const todo = todos.find(todo => todo.id === req.params.id);
+    const todo = todos.find(todo => todo.id === parseInt(req.params.id));
     if (todo) {
         const obj = req.body; // リクエスト本文のJSON文字列から変換されたオブジェクト
-        Object.keys(obj).forEach(key => {
-            todo[key] = obj[key];
-        });
+
+        Object.assign(todo, obj);
+        // 別解
+        // Object.keys(obj).forEach(key => todo[key] = obj[key]);
         console.log(`Updated todo: ${JSON.stringify(todo)}`);
         return res.json(todo);
     }
@@ -70,7 +71,7 @@ app.put(apiEndPoint + 'todos/:id', (req, res, next) => {
 });
 
 app.delete(apiEndPoint + 'todos/:id', (req, res, next) => {
-    const todoIndex = todos.findIndex(todo => todo.id === req.params.id);
+    const todoIndex = todos.findIndex(todo => todo.id === parseInt(req.params.id));
     if (todoIndex >= 0) {
         todos.splice(todoIndex, 1);
         console.log(`Deleted todo id: ${req.params.id}`);    
